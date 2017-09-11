@@ -1,0 +1,36 @@
+---
+title: 'Recognizing Digits'
+author: "Jeremy Holcombe"
+date: "5/8/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The MNIST data set provides a great entry point to the field of computer vision and a useful introduction to some of the challenges related to working with large data sets. The most notable challenge of working with this data set is the sheer amount of time that it takes to train models and experiment with different methods or to tune hyperparameters.
+
+I fit three models using different classification methods and compared their performance. Of the three models, the baseline random forest model performed the best. The other models, one fit using a basic neural network and another using linear discriminant analysis, performed slightly to significantly worse than the random forest model.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rlr}
+  \hline
+ & Method & KaggleScore \\ 
+  \hline
+1 & Random Forest & 0.9614 \\ 
+  2 & Neural Network & 0.9421 \\ 
+  3 & Linear Discriminant Analysis & 0.8689 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+As the training set contains 42,000 observations and 784 explanatory variables, the amount of time needed to train a model limits the amount of experimentation that can be performed within a reasonable time frame. As a reference, the baseline random forest model with 50 trees required just under 6 minutes for training. The amount of time required for training scales linearly for the random forest to just under an hour for training a random forest with 500 trees. In order to achieve better performance, I used the `h2o` package in `R` to run processing jobs in parallel. Rather than performing all tasks on a single core, I created a local cluster with two cores available on my machine and ran the tasks in parallel. The procedure run time was cut roughly in half, clocking in at just over 2 minutes. The baseline random forest model with 50 trees performed surprisingly well, achieving a classification accuracy of 96.14%.
+
+The second model was fit with a feedforward neural network with two hidden layers, each of which contained 100 nodes (or hidden units). The neural network utilized the Rectified Linear Unit (ReLU) activation function, which essentially passes anything that is greater than zero. The network was also regularized using dropout to avoid overfitting on the training data. For the input layer, each node was randomly omitted with a probability of 0.2, while the nodes in the hidden layers were omitted with a probability of 0.5. The classifications from this particular neural network model achieved a classification accuracy of just 94.21%. This is quite a bit lower than random forest and reflects, in my view, the complexity involved with constructing a neural network. A deep convolutional neural network, optimally tuned, should achieve an accuracy of greater than 99% on this data set, which indicates that this architecture was far below optimal.
+
+The final model constructed for the digits data set was fit using linear discriminant analysis. In order to successfully fit the model, I had to remove any variables that had no within-group variance (i.e., constant variables). I achieved this using the `nearZeroVar` function. If constant variables are not removed prior to fitting the model, LDA will fail to converge as the within-class covariance matrix will be singular and will not be able to provide a solution. The final model achieved a classification accuracy of 86.89%, which is significantly lower than either the neural network or random forest models. It is possible that quadratic discriminant analysis (QDA) would perform better, but this would be infeasible given the large number of classes and large data set.
+
+It is well known that convolutional neural networks, properly tuned and with many hidden layers, tend to perform very well on image classification problems, particularly with more challenging images. The neural network and LDA models I used failed to outperform the random forest baseline, indicating that at least the neural network was not sufficiently architected nor optimally tuned. I look forward to continuing to experiment with different neural network architectures and other methods (e.g., GBMs).
+
