@@ -2,7 +2,7 @@
 title: 'Recognizing Digits'
 author: "Jeremy Holcombe"
 date: "5/8/2017"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
